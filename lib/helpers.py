@@ -2,32 +2,43 @@ from functools import wraps
 from typing import Callable, Optional
 from datetime import date, datetime
 
-# Import the session factory from your database module
+# Import the session factory from your database module (adjusted to package layout)
 from lib.db.database import SessionLocal
 
 
-def with_session(func: Callable):
+def with_session(auto_commit: bool = False):
     """
-    Decorator that provides a DB session as the first argument to the wrapped function.
-    The session is opened before calling the function and closed afterwards.
-    If the wrapped function raises an exception, the session will be rolled back
-    and the exception re-raised.
+    Decorator factory returning a decorator that provides a DB session as the
+    first argument to the wrapped function.
+
+    Usage:
+        @with_session()
+        def fn(session, ...):
+            ...
+
+    If auto_commit=True, the decorator will commit the session when the wrapped
+    function returns successfully; otherwise commit is left to the function.
     """
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        session = SessionLocal()
-        try:
-            return func(session, *args, **kwargs)
-        except Exception:
-            # ensure DB state is reset so subsequent operations can continue
+    def decorator(func: Callable):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            session = SessionLocal()
             try:
-                session.rollback()
+                result = func(session, *args, **kwargs)
+                if auto_commit:
+                    session.commit()
+                return result
             except Exception:
-                pass
-            raise
-        finally:
-            session.close()
-    return wrapper
+                # ensure DB state is reset so subsequent operations can continue
+                try:
+                    session.rollback()
+                except Exception:
+                    pass
+                raise
+            finally:
+                session.close()
+        return wrapper
+    return decorator
 
 
 def print_table(rows, headers):
@@ -102,4 +113,3 @@ def input_date(prompt: str) -> Optional[date]:
             return datetime.fromisoformat(v).date()
         except Exception:
             print("Please enter a valid date in YYYY-MM-DD format or leave blank.")
-
