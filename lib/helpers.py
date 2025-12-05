@@ -1,9 +1,12 @@
+# lib/helpers.py
 from functools import wraps
-from typing import Callable, Optional
+from typing import Callable, Optional, Tuple
 from datetime import date, datetime
+from sqlalchemy.exc import IntegrityError
 
-# Import the session factory from your database module (adjusted to package layout)
+# Import the session factory from your database module (package layout)
 from lib.db.database import SessionLocal
+from lib.db.models import Membership  # used by safe_add_membership
 
 
 def with_session(auto_commit: bool = False):
@@ -78,6 +81,34 @@ def input_nonempty(prompt: str) -> str:
         print("Input cannot be empty")
 
 
+def input_optional(prompt: str) -> Optional[str]:
+    """
+    Prompt for an optional string. Returns None if the user enters blank,
+    otherwise returns the stripped string.
+    """
+    v = input(prompt).strip()
+    return v if v != "" else None
+
+
+def input_confirm(prompt: str, default: bool = False) -> bool:
+    """
+    Ask a yes/no question. Returns True for yes, False for no.
+    default controls what happens on blank input.
+    """
+    yes = {"y", "yes"}
+    no = {"n", "no"}
+    default_str = "Y/n" if default else "y/N"
+    while True:
+        v = input(f"{prompt} ({default_str}): ").strip().lower()
+        if v == "":
+            return default
+        if v in yes:
+            return True
+        if v in no:
+            return False
+        print("Please enter Y or N.")
+
+
 def input_int(prompt: str) -> int:
     """Prompt until a valid integer is entered."""
     while True:
@@ -113,3 +144,29 @@ def input_date(prompt: str) -> Optional[date]:
             return datetime.fromisoformat(v).date()
         except Exception:
             print("Please enter a valid date in YYYY-MM-DD format or leave blank.")
+
+
+# -------------------------
+# Convenience DB helpers
+# -------------------------
+def safe_add_membership(session, farmer, coop, role: str = "Member") -> Tuple[Optional[Membership], bool]:
+    """
+    Safely add a Membership linking farmer <-> coop.
+    Returns (membership_obj, created_bool).
+    If a membership already exists, returns (existing_obj, False).
+    On success returns (new_obj, True).
+    """
+    existing = session.query(Membership).filter_by(farmer_id=farmer.id, cooperative_id=coop.id).first()
+    if existing:
+        return existing, False
+
+    m = Membership(farmer=farmer, cooperative=coop, role=role, joined_on=date.today())
+    session.add(m)
+    try:
+        session.commit()
+        return m, True
+    except IntegrityError:
+        session.rollback()
+        # someone else might have created it concurrently; fetch and return
+        existing = session.query(Membership).filter_by(farmer_id=farmer.id, cooperative_id=coop.id).first()
+        return existing, False

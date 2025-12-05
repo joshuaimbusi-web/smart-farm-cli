@@ -1,4 +1,4 @@
-# models/__init__.py
+# lib/db/models/__init__.py
 from .base import Base
 
 # import all models so they register with Base.metadata
@@ -7,6 +7,9 @@ from .farmer import Farmer
 from .buyer import Buyer
 from .product_type import ProductType
 from .sale import Sale
+from .farmer_activity import FarmerActivity
+from .cooperative import Cooperative
+from .membership import Membership
 
 __all__ = [
     "Base",
@@ -15,6 +18,9 @@ __all__ = [
     "Buyer",
     "ProductType",
     "Sale",
+    "FarmerActivity",
+    "Cooperative",
+    "Membership",
 ]
 
 

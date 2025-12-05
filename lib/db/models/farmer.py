@@ -1,4 +1,3 @@
-# models/farmer.py
 from datetime import date
 from typing import List, Optional, TYPE_CHECKING
 from sqlalchemy import Column, Integer, String, Text, Date, ForeignKey
@@ -9,6 +8,10 @@ from .base import Base
 if TYPE_CHECKING:
     from .activity import Activity
     from .sale import Sale
+    from .farmer_activity import FarmerActivity
+    from .cooperative import Cooperative
+    from .membership import Membership
+
 
 class Farmer(Base):
     __tablename__ = 'farmers'
@@ -22,8 +25,19 @@ class Farmer(Base):
     activity_id = Column(Integer, ForeignKey('activities.id'))
     registration_date = Column(Date, default=date.today)
 
+    # One-to-many: existing activity FK
     activity = relationship('Activity', back_populates='farmers')
+
+    # One-to-many sales
     sales = relationship('Sale', back_populates='farmer', cascade='all, delete-orphan')
+
+    # --- Many-to-many dashboard via FarmerActivity ---
+    farmer_activities = relationship("FarmerActivity", back_populates="farmer", cascade="all, delete-orphan")
+    activities = relationship("Activity", secondary="farmer_activities", viewonly=True)
+
+    # --- Cooperative membership (association-object) ---
+    memberships = relationship("Membership", back_populates="farmer", cascade="all, delete-orphan")
+    cooperatives = relationship("Cooperative", secondary="memberships", viewonly=True)
 
     @validates('national_id')
     def validate_national_id(self, key, value):
