@@ -1,30 +1,20 @@
-# lib/db/models/farmer_activity.py
 from datetime import date, datetime
 from typing import Optional
 from sqlalchemy import Column, Integer, ForeignKey, Date, DateTime, String, Text, Float
 from sqlalchemy.orm import relationship, Session
-
 from .base import Base
 
-
 class FarmerActivity(Base):
-    """
-    Association-object linking Farmer <-> Activity with metadata.
-    """
     __tablename__ = "farmer_activities"
 
     id = Column(Integer, primary_key=True)
     farmer_id = Column(Integer, ForeignKey("farmers.id"), nullable=False)
     activity_id = Column(Integer, ForeignKey("activities.id"), nullable=False)
-
-    # metadata fields
     joined_on = Column(Date, default=date.today)
-    role = Column(String(50), default="participant")   # e.g., leader, participant
-    progress_percent = Column(Float, default=0.0)      # 0.0 - 100.0
+    role = Column(String(50), default="participant")  
+    progress_percent = Column(Float, default=0.0)     
     notes = Column(Text, nullable=True)
     last_updated = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-
-    # relationships back to parent objects
     farmer = relationship("Farmer", back_populates="farmer_activities")
     activity = relationship("Activity", back_populates="farmer_activities")
 

@@ -1,10 +1,7 @@
-# lib/db/models/cooperative.py
 from typing import List, Optional
 from sqlalchemy import Column, Integer, String, Text
 from sqlalchemy.orm import relationship, Session
-
 from .base import Base
-
 
 class Cooperative(Base):
     __tablename__ = "cooperatives"
@@ -12,10 +9,7 @@ class Cooperative(Base):
     name = Column(String(100), nullable=False, unique=True)
     description = Column(Text, nullable=True)
 
-    # association-object relationship
     memberships = relationship("Membership", back_populates="cooperative", cascade="all, delete-orphan")
-
-    # convenience view-only list of Farmer objects accessed via memberships
     farmers = relationship("Farmer", secondary="memberships", viewonly=True)
 
     @classmethod

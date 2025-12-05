@@ -1,9 +1,7 @@
-# models/sale.py
 from datetime import date
 from typing import List, Optional, TYPE_CHECKING
 from sqlalchemy import Column, Integer, ForeignKey, Float, Date
 from sqlalchemy.orm import relationship, Session
-
 from .base import Base
 
 if TYPE_CHECKING:
@@ -20,7 +18,6 @@ class Sale(Base):
     quantity = Column(Float, default=0.0)
     price = Column(Float, default=0.0)
     created_at = Column(Date, default=date.today)
-
     farmer = relationship('Farmer', back_populates='sales')
     buyer = relationship('Buyer', back_populates='sales')
     product_type = relationship('ProductType', back_populates='sales')

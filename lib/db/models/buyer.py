@@ -1,4 +1,3 @@
-# models/buyer.py
 from typing import List, Optional, TYPE_CHECKING
 from sqlalchemy import Column, Integer, String, Text
 from sqlalchemy.orm import relationship, Session

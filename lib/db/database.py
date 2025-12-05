@@ -2,7 +2,7 @@ from pathlib import Path
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-BASE_DIR = Path(__file__).resolve().parent   # <repo>/lib/db
+BASE_DIR = Path(__file__).resolve().parent  
 DB_PATH = BASE_DIR / "smart_farm.db"
 
 DATABASE_URL = f"sqlite:///{DB_PATH}"

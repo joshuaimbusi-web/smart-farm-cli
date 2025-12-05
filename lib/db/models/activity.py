@@ -2,13 +2,11 @@ from datetime import date
 from typing import List, Optional, TYPE_CHECKING
 from sqlalchemy import Column, Integer, String, Text, Date
 from sqlalchemy.orm import relationship, validates, Session
-
 from .base import Base
 
 if TYPE_CHECKING:
     from .farmer import Farmer
     from .farmer_activity import FarmerActivity
-
 
 class Activity(Base):
     __tablename__ = 'activities'
@@ -18,10 +16,7 @@ class Activity(Base):
     start_date = Column(Date)
     end_date = Column(Date)
 
-    # One-to-many: existing farmers
     farmers = relationship('Farmer', back_populates='activity', cascade='all, delete-orphan')
-
-    # Many-to-many dashboard via FarmerActivity
     farmer_activities = relationship("FarmerActivity", back_populates="activity", cascade="all, delete-orphan")
     farmers_list = relationship("Farmer", secondary="farmer_activities", viewonly=True)
 

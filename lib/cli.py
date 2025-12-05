@@ -10,8 +10,6 @@ from lib.helpers import (
     input_date,
     safe_add_membership,
 )
-
-# import your multi-file model package as "db"
 from lib.db.models import (
     init_db,
     Activity,
@@ -23,8 +21,6 @@ from lib.db.models import (
     Cooperative,
     Membership,
 )
-
-
 def main_menu():
     print("\n=== Smart Farm CLI ===")
     print("1) Activities")
@@ -36,10 +32,6 @@ def main_menu():
     print("7) Cooperatives & Memberships")
     print("0) Exit")
 
-
-# -----------------------------
-# ACTIVITIES
-# -----------------------------
 @with_session()
 def activities_menu(session):
     while True:
@@ -95,10 +87,6 @@ def activities_menu(session):
         else:
             print("Invalid option")
 
-
-# -----------------------------
-# FARMERS
-# -----------------------------
 @with_session()
 def farmers_menu(session):
     while True:
@@ -117,8 +105,6 @@ def farmers_menu(session):
             national_id = input_nonempty("National ID: ")
             phone = input("Phone: ").strip() or None
             email = input("Email: ").strip() or None
-
-            # show available activities
             rows = [(a.id, a.name) for a in Activity.get_all(session)]
             print_table(rows, ["ID", "Activity"])
             activity_id = input("Activity id (optional): ").strip() or None
@@ -174,10 +160,6 @@ def farmers_menu(session):
         else:
             print("Invalid option")
 
-
-# -----------------------------
-# BUYERS
-# -----------------------------
 @with_session()
 def buyers_menu(session):
     while True:
@@ -225,10 +207,6 @@ def buyers_menu(session):
         else:
             print("Invalid option")
 
-
-# -----------------------------
-# PRODUCT TYPES
-# -----------------------------
 @with_session()
 def products_menu(session):
     while True:
@@ -275,10 +253,6 @@ def products_menu(session):
         else:
             print("Invalid option")
 
-
-# -----------------------------
-# SALES
-# -----------------------------
 @with_session()
 def sales_menu(session):
     while True:
@@ -330,10 +304,6 @@ def sales_menu(session):
         else:
             print("Invalid option")
 
-
-# -----------------------------
-# DASHBOARD (FARMER ↔ ACTIVITY)
-# -----------------------------
 @with_session()
 def dashboard_menu(session):
     while True:
@@ -348,7 +318,6 @@ def dashboard_menu(session):
             rows = [(fa.id, fa.farmer.name, fa.activity.name) for fa in session.query(FarmerActivity).all()]
             print_table(rows, ["ID", "Farmer", "Activity"])
         elif choice == "2":
-            # show all farmers and activities
             print("Farmers:")
             print_table([(f.id, f.name) for f in Farmer.get_all(session)], ["ID", "Name"])
             print("Activities:")
@@ -378,10 +347,6 @@ def dashboard_menu(session):
         else:
             print("Invalid option")
 
-
-# -----------------------------
-# COOPERATIVES & MEMBERSHIPS
-# -----------------------------
 @with_session()
 def cooperative_menu(session):
     while True:
@@ -411,7 +376,6 @@ def cooperative_menu(session):
                 print(f"Created cooperative {name}")
 
         elif choice == "3":
-            # show farmers & coops for easy picking
             print("Farmers:")
             print_table([(f.id, f.name) for f in Farmer.get_all(session)], ["ID", "Name"])
             print("Cooperatives:")
@@ -427,14 +391,10 @@ def cooperative_menu(session):
             if not farmer or not coop:
                 print("Invalid IDs")
                 continue
-
             role = input("Role (default 'Member'): ").strip() or "Member"
-
-            # Prefer using helper to avoid race/unique errors
             try:
                 m, created = safe_add_membership(session, farmer, coop, role=role)
             except Exception as exc:
-                # If helper not available or raises, fallback to manual safe insert
                 session.rollback()
                 existing = session.query(Membership).filter_by(farmer_id=farmer.id, cooperative_id=coop.id).first()
                 if existing:
@@ -478,7 +438,6 @@ def cooperative_menu(session):
                     print("Membership not found for those keys.")
                     continue
             else:
-                # show current memberships with index
                 memberships = session.query(Membership).order_by(Membership.cooperative_id, Membership.farmer_id).all()
                 if not memberships:
                     print("(no memberships found)")
@@ -491,8 +450,6 @@ def cooperative_menu(session):
                     print("Invalid selection")
                     continue
                 m = memberships[choice_idx - 1]
-
-            # confirm then delete
             confirm = input(f"Confirm remove membership Farmer {m.farmer_id} <-> Coop {m.cooperative_id}? (y/N): ").strip().lower()
             if confirm == "y":
                 try:
@@ -510,13 +467,8 @@ def cooperative_menu(session):
         else:
             print("Invalid option")
 
-
-
-# -----------------------------
-# MAIN LOOP
-# -----------------------------
 def main():
-    init_db()  # create tables
+    init_db()  
 
     while True:
         main_menu()

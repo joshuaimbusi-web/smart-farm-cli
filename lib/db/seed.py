@@ -1,10 +1,3 @@
-"""
-Seed the smart_farm.db database with initial data.
-Run from project root:
-
-python -m lib.db.seed
-"""
-
 from datetime import date
 from lib.db.database import SessionLocal
 from lib.db.models import (
@@ -12,13 +5,10 @@ from lib.db.models import (
     FarmerActivity, Cooperative, Membership
 )
 
-
 def seed():
-    """Create tables (if not exist) and seed initial data"""
-    init_db()  # ensure tables exist
+    init_db() 
     session = SessionLocal()
 
-    # ---------- Activities ----------
     activity1 = Activity(
         name="Maize Farming",
         description="Seasonal maize production.",
@@ -34,7 +24,6 @@ def seed():
     session.add_all([activity1, activity2])
     session.commit()
 
-    # ---------- Farmers ----------
     farmer1 = Farmer(
         name="John Doe",
         farm_name="Green Valley Farm",
@@ -58,7 +47,6 @@ def seed():
     session.add_all([farmer1, farmer2])
     session.commit()
 
-    # ---------- Buyers ----------
     buyer1 = Buyer(
         name="FreshMart",
         organization="FreshMart Ltd",
@@ -78,7 +66,6 @@ def seed():
     session.add_all([buyer1, buyer2])
     session.commit()
 
-    # ---------- Product Types ----------
     maize = ProductType(
         name="Maize Grain",
         category="Cereal",
@@ -94,7 +81,6 @@ def seed():
     session.add_all([maize, milk])
     session.commit()
 
-    # ---------- Sales ----------
     sale1 = Sale(
         farmer_id=farmer1.id,
         buyer_id=buyer1.id,
@@ -112,19 +98,16 @@ def seed():
     session.add_all([sale1, sale2])
     session.commit()
 
-    # ---------- FarmerActivity (dashboard many-to-many) ----------
-    fa1 = FarmerActivity(farmer=farmer1, activity=activity2)  # John Doe also linked to Dairy
-    fa2 = FarmerActivity(farmer=farmer2, activity=activity1)  # Mary Wanjiku also linked to Maize
+    fa1 = FarmerActivity(farmer=farmer1, activity=activity2)
+    fa2 = FarmerActivity(farmer=farmer2, activity=activity1)  
     session.add_all([fa1, fa2])
     session.commit()
 
-    # ---------- Cooperatives and Memberships ----------
     coop1 = Cooperative(name="Sunrise Farmers Coop")
     coop2 = Cooperative(name="Green Valley Cooperative")
     session.add_all([coop1, coop2])
     session.commit()
 
-    # Link farmers to cooperatives
     m1 = Membership(farmer=farmer1, cooperative=coop1, role="Member", joined_on=date(2024, 2, 15))
     m2 = Membership(farmer=farmer2, cooperative=coop2, role="Chairperson", joined_on=date(2024, 3, 20))
     session.add_all([m1, m2])

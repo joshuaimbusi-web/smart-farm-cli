@@ -1,8 +1,6 @@
-# models/product_type.py
 from typing import List, Optional
 from sqlalchemy import Column, Integer, String, Text
 from sqlalchemy.orm import relationship, Session
-
 from .base import Base
 
 class ProductType(Base):
@@ -12,7 +10,6 @@ class ProductType(Base):
     category = Column(String(50))
     typical_unit = Column(String(50))
     description = Column(Text)
-
     sales = relationship('Sale', back_populates='product_type')
 
     @classmethod
